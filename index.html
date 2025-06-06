@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightsaber Forge - Catálogo Interactivo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Pathway+Gothic+One&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite alternate;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+        
+        .title {
+            font-family: 'Pathway Gothic One', sans-serif;
+            font-size: 4rem;
+            font-weight: 400;
+            letter-spacing: 0.15em;
+            background: linear-gradient(45deg, #FFE81F 0%, #FFF700 50%, #FFED4E 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px #B8860B, 4px 4px 10px rgba(0, 0, 0, 0.8);
+            transform: perspective(300px) rotateX(25deg);
+            display: inline-block;
+            position: relative;
+        }
+        
+        .title::before {
+            content: 'LIGHTSABER FORGE';
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: linear-gradient(45deg, #FFE81F 0%, #FFF700 50%, #FFED4E 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: blur(2px);
+            z-index: -1;
+            transform: translateY(2px) translateX(2px);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            font-weight: 400;
+        }
+        
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 25px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+        }
+        
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .filter-btn.active {
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+        
+        .search-input::placeholder {
+            color: #a0a0a0;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .lightsaber-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .lightsaber-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--saber-color);
+        }
+        
+        .lightsaber-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, var(--saber-color) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        
+        .lightsaber-card:hover::before {
+            opacity: 0.1;
+        }
+        
+        .saber-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .saber-hilt {
+            width: 20px;
+            height: 120px;
+            background: linear-gradient(180deg, #666 0%, #333 50%, #111 100%);
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .saber-blade {
+            width: 6px;
+            height: 150px;
+            background: linear-gradient(180deg, var(--saber-color) 0%, rgba(255, 255, 255, 0.8) 50%, var(--saber-color) 100%);
+            border-radius: 3px;
+            position: absolute;
+            top: -150px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 20px var(--saber-color), 0 0 40px var(--saber-color), 0 0 60px var(--saber-color);
+            opacity: 0;
+            animation: ignite 0.8s ease-out forwards;
+        }
+        
+        .lightsaber-card:hover .saber-blade {
+            animation: ignite 0.8s ease-out forwards, glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes ignite {
+            0% {
+                height: 0;
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                height: 150px;
+                opacity: 0.9;
+            }
+        }
+        
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 20px var(--saber-color), 0 0 40px var(--saber-color), 0 0 60px var(--saber-color);
+            }
+            100% {
+                box-shadow: 0 0 30px var(--saber-color), 0 0 50px var(--saber-color), 0 0 80px var(--saber-color);
+            }
+        }
+        
+        .saber-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--saber-color);
+            text-shadow: 0 0 10px var(--saber-color);
+        }
+        
+        .owner {
+            font-size: 1.1rem;
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+        
+        .details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .detail-label {
+            color: #a0a0a0;
+        }
+        
+        .detail-value {
+            color: #fff;
+            font-weight: 700;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: rgba(20, 20, 40, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid var(--modal-color);
+            box-shadow: 0 0 50px var(--modal-color);
+            position: relative;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #fff;
+            transition: color 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            color: var(--modal-color);
+        }
+        
+        .modal-saber {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .modal-title {
+            font-size: 2.5rem;
+            color: var(--modal-color);
+            text-shadow: 0 0 20px var(--modal-color);
+            margin-bottom: 10px;
+        }
+        
+        .modal-owner {
+            font-size: 1.3rem;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        
+        .modal-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-description {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #ddd;
+            text-align: justify;
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.8rem;
+                letter-spacing: 0.1em;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .modal-content {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+            
+            .modal-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 class="title">LIGHTSABER FORGE</h1>
+            <p class="subtitle">Catálogo Interactivo de Sables de Luz</p>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="Buscar por personaje o sable...">
+        </div>
+        
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            <button class="filter-btn" data-filter="jedi">Jedi</button>
+            <button class="filter-btn" data-filter="sith">Sith</button>
+            <button class="filter-btn" data-filter="otros">Otros</button>
+        </div>
+        
+        <div class="grid" id="lightsaberGrid"></div>
+    </div>
+    
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div class="modal-saber">
+                <div class="saber-visual">
+                    <div class="saber-hilt">
+                        <div class="saber-blade"></div>
+                    </div>
+                </div>
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <p class="modal-owner" id="modalOwner"></p>
+            </div>
+            <div class="modal-details" id="modalDetails"></div>
+            <div class="modal-description" id="modalDescription"></div>
+        </div>
+    </div>
+
+    <script>
+        const lightsabers = [
+            {
+                name: "Sable de Luke Skywalker",
+                owner: "Luke Skywalker",
+                color: "#00ff00",
+                faction: "jedi",
+                crystal: "Sintético Verde",
+                form: "Forma V - Shien/Djem So",
+                era: "Nueva República",
+                hilt: "Empuñadura Simple",
+                description: "Construido después de perder su primer sable en Cloud City. Luke creó este sable usando un cristal sintético, lo que le da su característico color verde. Representa su madurez como Jedi y su conexión con la Fuerza."
+            },
+            {
+                name: "Sable de Darth Vader",
+                owner: "Darth Vader / Anakin Skywalker",
+                color: "#ff0000",
+                faction: "sith",
+                crystal: "Cristal Sintético Rojo",
+                form: "Forma V - Djem So",
+                era: "Imperio Galáctico",
+                hilt: "Empuñadura Larga",
+                description: "El sable icónico del Lord Sith más temido de la galaxia. Construido tras su caída al lado oscuro, este sable representa poder, autoridad y el dominio del miedo. Su cristal rojo sangrado refleja la corrupción de Anakin."
+            },
+            {
+                name: "Sable de Obi-Wan Kenobi",
+                owner: "Obi-Wan Kenobi",
+                color: "#0099ff",
+                faction: "jedi",
+                crystal: "Cristal Azul de Ilum",
+                form: "Forma III - Soresu",
+                era: "República/Imperio",
+                hilt: "Empuñadura Clásica",
+                description: "El sable del legendario Maestro Jedi Obi-Wan Kenobi. Perfecto para la defensa, refleja su maestría en Soresu. Este sable ha visto incontables batallas, desde las Guerras Clon hasta su último duelo con Vader."
+            },
+            {
+                name: "Sable de Mace Windu",
+                owner: "Mace Windu",
+                color: "#8000ff",
+                faction: "jedi",
+                crystal: "Cristal Púrpura Único",
+                form: "Forma VII - Vaapad",
+                era: "República Galáctica",
+                hilt: "Empuñadura Dorada",
+                description: "El único sable púrpura conocido en el canon, refleja la naturaleza única de Windu y su dominio del Vaapad, una forma que canaliza la oscuridad sin corromperse. Un arma tan singular como su portador."
+            },
+            {
+                name: "Sables de Darth Maul",
+                owner: "Darth Maul",
+                color: "#ff0000",
+                faction: "sith",
+                crystal: "Cristales Rojos Gemelos",
+                form: "Forma VII - Juyo",
+                era: "República Galáctica",
+                hilt: "Doble Hoja",
+                description: "El primer sable de doble hoja visto en milenios. Diseñado para combate agresivo y espectacular, este arma refleja la naturaleza salvaje y acrobática de Maul. Cada extremo es letal como un sable completo."
+            },
+            {
+                name: "Sable de Yoda",
+                owner: "Maestro Yoda",
+                color: "#00ff00",
+                faction: "jedi",
+                crystal: "Cristal Verde Antiguo",
+                form: "Forma IV - Ataru",
+                era: "República Galáctica",
+                hilt: "Empuñadura Diminuta",
+                description: "El sable más pequeño jamás construido, perfectamente adaptado a la estatura de Yoda. A pesar de su tamaño, este sable ha derrotado a algunos de los oponentes más formidables, demostrando que el tamaño no importa."
+            },
+            {
+                name: "Sable de Rey",
+                owner: "Rey Skywalker",
+                color: "#ffff00",
+                faction: "jedi",
+                crystal: "Cristal Amarillo Raro",
+                form: "Forma Híbrida",
+                era: "Nueva República",
+                hilt: "Empuñadura Salvage",
+                description: "Construido con materiales reciclados de Jakku, incluyendo partes del bastón de Rey. El cristal amarillo es extremadamente raro y simboliza la conexión de Rey con la Fuerza y su papel como guardiana del equilibrio."
+            },
+            {
+                name: "Sable de Kylo Ren",
+                owner: "Kylo Ren / Ben Solo",
+                color: "#ff4444",
+                faction: "sith",
+                crystal: "Cristal Rajado",
+                form: "Forma Agresiva",
+                era: "Primera Orden",
+                hilt: "Cruciforme",
+                description: "Un sable inestable con empuñadura cruzada, construido con un cristal dañado que requiere ventilación lateral. Refleja la naturaleza conflictiva y la lucha interna de su portador entre la luz y la oscuridad."
+            },
+            {
+                name: "Sables de Ahsoka Tano",
+                owner: "Ahsoka Tano",
+                color: "#ffffff",
+                faction: "otros",
+                crystal: "Cristales Blancos Purificados",
+                form: "Forma Dual Única",
+                era: "Imperio/Rebelión",
+                hilt: "Empuñaduras Curvas",
+                description: "Únicos sables con cristales blancos, purificados de cristales rojos Sith. Representan la neutralidad de Ahsoka y su camino único en la Fuerza, ni Jedi ni Sith, sino algo completamente diferente."
+            },
+            {
+                name: "Sable de Qui-Gon Jinn",
+                owner: "Qui-Gon Jinn",
+                color: "#00cc00",
+                faction: "jedi",
+                crystal: "Cristal Verde de Adegan",
+                form: "Forma IV - Ataru",
+                era: "República Galáctica",
+                hilt: "Empuñadura Larga",
+                description: "El sable del maestro rebelde de Obi-Wan. Construido con un cristal de Adegan, refleja su naturaleza no convencional y su fuerte conexión con la Fuerza Viviente. Un arma de un verdadero Jedi maverick."
+            },
+            {
+                name: "Sable de Anakin Skywalker",
+                owner: "Anakin Skywalker",
+                color: "#4169e1",
+                faction: "jedi",
+                crystal: "Cristal Azul de Ilum",
+                form: "Forma V - Shien/Djem So",
+                era: "República Galáctica",
+                hilt: "Empuñadura Elegante",
+                description: "El primer sable que Anakin construyó como Padawan. Perdido en Geonosis y más tarde en Cloud City. Este sable fue testigo del ascenso y la caída del Elegido, desde sus días como héroe hasta su transformación."
+            },
+            {
+                name: "Sable del Conde Dooku",
+                owner: "Conde Dooku / Darth Tyranus",
+                color: "#dc143c",
+                faction: "sith",
+                crystal: "Cristal Rojo Sintético",
+                form: "Forma II - Makashi",
+                era: "Guerras Clon",
+                hilt: "Empuñadura Curva",
+                description: "Un diseño único con empuñadura curva, perfecta para duelos elegantes. Refleja la naturaleza aristocrática de Dooku y su maestría absoluta en Makashi, la forma de combate más refinada."
+            },
+            {
+                name: "Sable de Darth Sidious",
+                owner: "Emperador Palpatine / Darth Sidious",
+                color: "#8b0000",
+                faction: "sith",
+                crystal: "Cristal Rojo Oscuro",
+                form: "Forma VII - Juyo",
+                era: "Imperio Galáctico",
+                hilt: "Empuñadura Ornamentada",
+                description: "El sable del Señor Sith más poderoso de la galaxia. Raramente usado, pero devastadoramente letal. Su cristal rojo oscuro refleja la profundidad de su corrupción y dominio del Lado Oscuro."
+            },
+            {
+                name: "Sable de Kit Fisto",
+                owner: "Kit Fisto",
+                color: "#00ffff",
+                faction: "jedi",
+                crystal: "Cristal Aqua de Mon Calamari",
+                form: "Forma I - Shii-Cho",
+                era: "República Galáctica",
+                hilt: "Empuñadura Impermeable",
+                description: "Diseñado específicamente para combate subacuático. El cristal aqua es extremadamente raro y permite al sable funcionar perfectamente bajo el agua, reflejando el origen acuático de Kit Fisto."
+            },
+            {
+                name: "Sable de Aayla Secura",
+                owner: "Aayla Secura",
+                color: "#0066ff",
+                faction: "jedi",
+                crystal: "Cristal Azul Profundo",
+                form: "Forma IV - Ataru",
+                era: "República Galáctica",
+                hilt: "Empuñadura Estilizada",
+                description: "Un elegante sable azul que refleja la gracia y habilidad acrobática de la Maestra Jedi Twi'lek. Su diseño equilibrado es perfecto para las maniobras aéreas características de Ataru."
+            },
+            {
+                name: "Sable de Plo Koon",
+                owner: "Plo Koon",
+                color: "#87ceeb",
+                faction: "jedi",
+                crystal: "Cristal Azul Eléctrico",
+                form: "Forma V - Shien",
+                era: "República Galáctica",
+                hilt: "Empuñadura Técnica",
+                description: "El sable del respetado Maestro Kel Dor. Su cristal azul eléctrico complementa su habilidad natural para generar Juicio de la Fuerza, creando una combinación letal de tecnología y poder natural."
+            },
+            {
+                name: "Sable de Shaak Ti",
+                owner: "Shaak Ti",
+                color: "#0080ff",
+                faction: "jedi",
+                crystal: "Cristal Azul de Togruta",
+                form: "Forma II - Makashi",
+                era: "República Galáctica",
+                hilt: "Empuñadura Ceremonial",
+                description: "Un sable elegante que refleja la sabiduría y serenidad de la Maestra Togruta. Su cristal azul único resuena con las montallas de su especie, creando una conexión especial con la Fuerza."
+            },
+            {
+                name: "Sable de Luminara Unduli",
+                owner: "Luminara Unduli",
+                color: "#32cd32",
+                faction: "jedi",
+                crystal: "Cristal Verde de Mirial",
+                form: "Forma III - Soresu",
+                era: "República Galáctica",
+                hilt: "Empuñadura Tradicional",
+                description: "Un sable construido siguiendo las tradiciones Mirialan más antiguas. Su cristal verde refleja la conexión profunda de Luminara con las tradiciones Jedi y su enfoque disciplinado del combate."
+            },
+            {
+                name: "Sable de Barriss Offee",
+                owner: "Barriss Offee",
+                color: "#228b22",
+                faction: "otros",
+                crystal: "Cristal Verde Corrompido",
+                form: "Forma VI - Niman",
+                era: "Guerras Clon",
+                hilt: "Empuñadura Modificada",
+                description: "Originalmente un sable Jedi tradicional, fue corrompido cuando Barriss cayó al lado oscuro. Representa la tragedia de un Jedi prometedor que perdió la fe en la Orden durante las Guerras Clon."
+            },
+            {
+                name: "Sable de Asajj Ventress",
+                owner: "Asajj Ventress",
+                color: "#ff6347",
+                faction: "sith",
+                crystal: "Cristales Rojos Curvos",
+                form: "Forma II - Makashi",
+                era: "Guerras Clon",
+                hilt: "Empuñaduras Curvas Gemelas",
+                description: "Dos sables curvos que pueden conectarse para formar un sable de doble hoja. Refleja la naturaleza dual de Ventress: entrenada como Sith pero buscando su propio camino en la galaxia."
+            },
+            {
+                name: "Sable de Savage Opress",
+                owner: "Savage Opress",
+                color: "#ff0000",
+                faction: "sith",
+                crystal: "Cristal Rojo Primitivo",
+                form: "Forma VII - Juyo",
+                era: "Guerras Clon",
+                hilt: "Empuñadura Brutal",
+                description: "Un sable construido con técnicas primitivas pero letalmente efectivo. Su diseño brutal refleja la naturaleza salvaje de Savage y su entrenamiento apresurado en las artes Sith bajo Dooku."
+            },
+            {
+                name: "Sable de Pre Vizsla",
+                owner: "Pre Vizsla",
+                color: "#000000",
+                faction: "otros",
+                crystal: "Cristal Negro Único",
+                form: "Estilo Mandaloriano",
+                era: "Guerras Clon",
+                hilt: "Sable Oscuro",
+                description: "El legendario Sable Oscuro de Mandalore, un arma ancestral única en toda la galaxia. Su cristal negro es completamente único y simboliza el liderazgo de Mandalore y el poder de los antiguos guerreros."
+            },
+            {
+                name: "Sable de Ezra Bridger",
+                owner: "Ezra Bridger",
+                color: "#0066cc",
+                faction: "jedi",
+                crystal: "Cristal Azul Kyber",
+                form: "Forma Improvisada",
+                era: "Rebelión Galáctica",
+                hilt: "Empuñadura Blaster",
+                description: "Un diseño único que combina sable de luz y blaster. Refleja el ingenio de Ezra y su entrenamiento no convencional. Más tarde construiría un segundo sable más tradicional de color verde."
+            },
+            {
+                name: "Sable de Kanan Jarrus",
+                owner: "Kanan Jarrus / Caleb Dume",
+                color: "#4169e1",
+                faction: "jedi",
+                crystal: "Cristal Azul Superviviente",
+                form: "Forma III - Soresu",
+                era: "Imperio Galáctica",
+                hilt: "Empuñadura Modular",
+                description: "El sable de un Jedi superviviente de la Orden 66. Su diseño modular permite desmontarlo para ocultarlo. Representa la resistencia y la esperanza en los tiempos más oscuros de la galaxia."
+            },
+            {
+                name: "Sable de Sabine Wren",
+                owner: "Sabine Wren",
+                color: "#000000",
+                faction: "otros",
+                crystal: "Sable Oscuro Heredado",
+                form: "Estilo Mandaloriano",
+                era: "Rebelión Galáctica",
+                hilt: "Sable Oscuro Ancestral",
+                description: "El mismo Sable Oscuro una vez empuñado por Pre Vizsla, ahora en manos de Sabine Wren. Representa su derecho a liderar Mandalore y unir a los clanes bajo una sola bandera contra el Imperio."
+            }
+        ];
+
+        let filteredSabers = [...lightsabers];
+
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        function renderLightsabers(sabers) {
+            const grid = document.getElementById('lightsaberGrid');
+            grid.innerHTML = '';
+
+            sabers.forEach((saber, index) => {
+                const card = document.createElement('div');
+                card.className = 'lightsaber-card';
+                card.style.setProperty('--saber-color', saber.color);
+                card.onclick = () => openModal(saber);
+
+                card.innerHTML = `
+                    <div class="saber-visual">
+                        <div class="saber-hilt">
+                            <div class="saber-blade"></div>
+                        </div>
+                    </div>
+                    <div class="saber-info">
+                        <h3>${saber.name}</h3>
+                        <p class="owner">${saber.owner}</p>
+                        <div class="details">
+                            <div class="detail-item">
+                                <span class="detail-label">Color:</span>
+                                <span class="detail-value">${saber.crystal}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Forma:</span>
+                                <span class="detail-value">${saber.form}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Era:</span>
+                                <span class="detail-value">${saber.era}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Facción:</span>
+                                <span class="detail-value">${saber.faction.charAt(0).toUpperCase() + saber.faction.slice(1)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function filterSabers(faction) {
+            if (faction === 'all') {
+                filteredSabers = [...lightsabers];
+            } else {
+                filteredSabers = lightsabers.filter(saber => saber.faction === faction);
+            }
+            
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filteredSabers = filteredSabers.filter(saber => 
+                    saber.name.toLowerCase().includes(searchTerm) ||
+                    saber.owner.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            renderLightsabers(filteredSabers);
+        }
+
+        function searchSabers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+            
+            let sabers = activeFilter === 'all' ? [...lightsabers] : lightsabers.filter(saber => saber.faction === activeFilter);
+            
+            if (searchTerm) {
+                sabers = sabers.filter(saber => 
+                    saber.name.toLowerCase().includes(searchTerm) ||
+                    saber.owner.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            renderLightsabers(sabers);
+        }
+
+        function openModal(saber) {
+            const modal = document.getElementById('modal');
+            const modalContent = modal.querySelector('.modal-content');
+            modalContent.style.setProperty('--modal-color', saber.color);
+            
+            document.getElementById('modalTitle').textContent = saber.name;
+            document.getElementById('modalOwner').textContent = saber.owner;
+            
+            const modalDetails = document.getElementById('modalDetails');
+            modalDetails.innerHTML = `
+                <div class="detail-item">
+                    <span class="detail-label">Cristal:</span>
+                    <span class="detail-value">${saber.crystal}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Forma de Combate:</span>
+                    <span class="detail-value">${saber.form}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Era:</span>
+                    <span class="detail-value">${saber.era}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Empuñadura:</span>
+                    <span class="detail-value">${saber.hilt}</span>
+                </div>
+            `;
+            
+            document.getElementById('modalDescription').textContent = saber.description;
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            renderLightsabers(lightsabers);
+            
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    filterSabers(btn.dataset.filter);
+                });
+            });
+            
+            // Search input
+            document.getElementById('searchInput').addEventListener('input', searchSabers);
+            
+            // Modal close
+            document.querySelector('.close-btn').addEventListener('click', closeModal);
+            document.getElementById('modal').addEventListener('click', (e) => {
+                if (e.target.id === 'modal') closeModal();
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+        });
+    </script>
+</body>
+</html>
